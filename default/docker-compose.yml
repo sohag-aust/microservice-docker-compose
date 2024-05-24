@@ -1,6 +1,7 @@
 services:
   rabbit:
-    image: rabbitmq:3.13-management
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq-ms
     hostname: rabbitmq
     ports:
       - "5672:5672"
@@ -8,9 +9,9 @@ services:
     healthcheck:
       test: rabbitmq-diagnostics check_port_connectivity # this is the test command for rabbitmq health check, found from official doc
       interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     networks:
       - eazybank
 
@@ -19,19 +20,32 @@ services:
     container_name: configserver-ms
     ports:
       - "8071:8071"
+    environment:
+      SPRING_RABBIT_HOST: rabbit
+      SPRING_RABBIT_PORT: 5672
     depends_on:
       rabbit:
         condition: service_healthy
+#    healthcheck:
+##      test: "curl --fail --silent http://localhost:8071/actuator/health/readiness | grep UP || exit 1"
+##      test: "curl --fail --silent http://localhost:8071/actuator/health/readiness | grep '\"status\":\"UP\"' || exit 1"
+#      test: ["CMD-SHELL", "curl -f http://localhost:8071/actuator/health/readiness || exit 1"]
+#      interval: 10s
+#      timeout: 10s
+#      retries: 5
+#      start_period: 60s
+
     healthcheck:
-      test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
+      test: "curl --silent --fail --request GET http://localhost:8071/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
       interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 700m
     networks:
       - eazybank
 
@@ -46,7 +60,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 700m
     networks:
       - eazybank
     environment:
@@ -54,7 +68,11 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       # here first configserver is spring format, and second configserver is docker service name
       SPRING_PROFILES_ACTIVE: default
-
+      SPRING_RABBIT_HOST: rabbit
+      SPRING_RABBIT_PORT: 5672
+#        - RABBITMQ_HOST=rabbitmq
+#        - RABBITMQ_PORT=5672
+#
   cards:
     image: "ashrafulsohag/cards:s6"
     container_name: cards-ms
@@ -66,7 +84,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 700m
     networks:
       - eazybank
     environment:
@@ -74,6 +92,8 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       # here first configserver is spring format, and second configserver is docker service name
       SPRING_PROFILES_ACTIVE: default
+      SPRING_RABBIT_HOST: rabbit
+      SPRING_RABBIT_PORT: 5672
 
   loans:
     image: "ashrafulsohag/loans:s6"
@@ -86,7 +106,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 700m
     networks:
       - eazybank
     environment:
@@ -94,6 +114,8 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       # here first configserver is spring format, and second configserver is docker service name
       SPRING_PROFILES_ACTIVE: default
+      SPRING_RABBIT_HOST: rabbit
+      SPRING_RABBIT_PORT: 5672
 
 networks:
   eazybank:
