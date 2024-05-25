@@ -1,40 +1,60 @@
 services:
-  rabbit:
-    image: rabbitmq:3.13-management
-    container_name: rabbitmq-ms
-    hostname: rabbitmq
+  accountsdb:
+    image: mysql
+    container_name: accountsdb
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - 3307:3306
     healthcheck:
-      test: rabbitmq-diagnostics check_port_connectivity # this is the test command for rabbitmq health check, found from official doc
-      interval: 10s
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
       timeout: 10s
-      retries: 3
-      start_period: 30s
+      retries: 10
+      interval: 10s
+      start_period: 10s
+    environment:
+      MYSQL_DATABASE: accountsdb
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - eazybank
+
+  cardsdb:
+    image: mysql
+    container_name: cardsdb
+    ports:
+      - 3308:3306
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 10s
+      retries: 10
+      interval: 10s
+      start_period: 10s
+    environment:
+      MYSQL_DATABASE: cardsdb
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - eazybank
+
+  loansdb:
+    image: mysql
+    container_name: loansdb
+    ports:
+      - 3309:3306
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 10s
+      retries: 10
+      interval: 10s
+      start_period: 10s
+    environment:
+      MYSQL_DATABASE: loansdb
+      MYSQL_ROOT_PASSWORD: root
     networks:
       - eazybank
 
   configserver:
-    image: "ashrafulsohag/configserver:s6"
+    image: "ashrafulsohag/configserver:s7"
     container_name: configserver-ms
     ports:
       - "8071:8071"
-    environment:
-      SPRING_RABBIT_HOST: rabbit
-      SPRING_RABBIT_PORT: 5672
-    depends_on:
-      rabbit:
-        condition: service_healthy
-#    healthcheck:
-##      test: "curl --fail --silent http://localhost:8071/actuator/health/readiness | grep UP || exit 1"
-##      test: "curl --fail --silent http://localhost:8071/actuator/health/readiness | grep '\"status\":\"UP\"' || exit 1"
-#      test: ["CMD-SHELL", "curl -f http://localhost:8071/actuator/health/readiness || exit 1"]
-#      interval: 10s
-#      timeout: 10s
-#      retries: 5
-#      start_period: 60s
-
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8071/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
       interval: 10s
@@ -50,12 +70,14 @@ services:
       - eazybank
 
   accounts:
-    image: "ashrafulsohag/accounts:s6"
+    image: "ashrafulsohag/accounts:s7"
     container_name: accounts-ms
     ports:
       - "8080:8080"
     depends_on:
       configserver:
+        condition: service_healthy
+      accountsdb:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8080/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
@@ -74,18 +96,19 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       # here first configserver is spring format, and second configserver is docker service name
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_RABBIT_HOST: rabbit
-      SPRING_RABBIT_PORT: 5672
-#        - RABBITMQ_HOST=rabbitmq
-#        - RABBITMQ_PORT=5672
-#
+      SPRING_DATASOURCE_URL: jdbc:mysql://accountsdb:3306/accountsdb # here port is the docker container port, not my localhost port
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
   cards:
-    image: "ashrafulsohag/cards:s6"
+    image: "ashrafulsohag/cards:s7"
     container_name: cards-ms
     ports:
       - "9000:9000"
     depends_on:
       configserver:
+        condition: service_healthy
+      cardsdb:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:9000/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
@@ -104,16 +127,19 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       # here first configserver is spring format, and second configserver is docker service name
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_RABBIT_HOST: rabbit
-      SPRING_RABBIT_PORT: 5672
+      SPRING_DATASOURCE_URL: jdbc:mysql://cardsdb:3306/cardsdb # here port is the docker container port, not my localhost port
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
 
   loans:
-    image: "ashrafulsohag/loans:s6"
+    image: "ashrafulsohag/loans:s7"
     container_name: loans-ms
     ports:
       - "8090:8090"
     depends_on:
       configserver:
+        condition: service_healthy
+      loansdb:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8090/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
@@ -132,8 +158,9 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       # here first configserver is spring format, and second configserver is docker service name
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_RABBIT_HOST: rabbit
-      SPRING_RABBIT_PORT: 5672
+      SPRING_DATASOURCE_URL: jdbc:mysql://loansdb:3306/loansdb # here port is the docker container port, not my localhost port
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
 
 networks:
   eazybank:
