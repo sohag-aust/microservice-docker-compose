@@ -51,7 +51,7 @@ services:
       - eazybank
 
   configserver:
-    image: "ashrafulsohag/configserver:s7"
+    image: "ashrafulsohag/configserver:s8"
     container_name: configserver-ms
     ports:
       - "8071:8071"
@@ -69,15 +69,42 @@ services:
     networks:
       - eazybank
 
+  eurekaserver:
+    image: "ashrafulsohag/eurekaserver:s8"
+    container_name: eurekaserver-ms
+    ports:
+      - "8070:8070"
+    depends_on:
+      configserver:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --silent --fail --request GET http://localhost:8070/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - eazybank
+    environment:
+      SPRING_APPLICATION_NAME: eurekaserver
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      SPRING_PROFILES_ACTIVE: qa
+
   accounts:
-    image: "ashrafulsohag/accounts:s7"
+    image: "ashrafulsohag/accounts:s8"
     container_name: accounts-ms
     ports:
       - "8080:8080"
     depends_on:
+      accountsdb:
+        condition: service_healthy
       configserver:
         condition: service_healthy
-      accountsdb:
+      eurekaserver:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8080/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
@@ -99,16 +126,19 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://accountsdb:3306/accountsdb # here port is the docker container port, not my localhost port
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
 
   cards:
-    image: "ashrafulsohag/cards:s7"
+    image: "ashrafulsohag/cards:s8"
     container_name: cards-ms
     ports:
       - "9000:9000"
     depends_on:
+      cardsdb:
+        condition: service_healthy
       configserver:
         condition: service_healthy
-      cardsdb:
+      eurekaserver:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:9000/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
@@ -130,16 +160,19 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://cardsdb:3306/cardsdb # here port is the docker container port, not my localhost port
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
 
   loans:
-    image: "ashrafulsohag/loans:s7"
+    image: "ashrafulsohag/loans:s8"
     container_name: loans-ms
     ports:
       - "8090:8090"
     depends_on:
+      loansdb:
+        condition: service_healthy
       configserver:
         condition: service_healthy
-      loansdb:
+      eurekaserver:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8090/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
@@ -161,6 +194,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://loansdb:3306/loansdb # here port is the docker container port, not my localhost port
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
 
 networks:
   eazybank:
