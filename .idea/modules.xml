@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/docker-compose-yamls.iml" filepath="$PROJECT_DIR$/.idea/docker-compose-yamls.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/microservice-docker-compose.iml" filepath="$PROJECT_DIR$/.idea/microservice-docker-compose.iml" />
     </modules>
   </component>
 </project>
