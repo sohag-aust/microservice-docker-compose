@@ -27,3 +27,18 @@
     8. hit the /api/fetchCustomerDetails again, and again. one time it will give data and another time it will throw internal server exception
         because the api route to loans microservices which instance is down.
     9. So, we can understand the service discovery and load balancing from client side using the upper testing
+
+
+# Section :: 10.6 :: Test RateLimiting with Gateway server for accounts and cards microservice
+
+    firstly up docker-compose for default folder
+
+    sudo docker-compose up
+
+    if not succeeded then , run the docker-compose up command again
+    for down : sudo docker-compose down
+
+    After all container is up, then test services
+
+    Account Microservice :: http://172.18.0.11:8072/eazybank/accounts/api/contact-info  [hit again and again, though it is showing 504 from chrome, look at the log, account microservice fallback method is triggered]
+    Card Microservice :: using apache benchmark command :: ab -n 10 -c 2 -v 3 http://localhost:8072/eazybank/cards/api/contact-info 
