@@ -40,5 +40,12 @@
 
     After all container is up, then test services
 
+    If container is still not up and running, then goto docker-compose and look at the left bar, for each service in the docker-compose
+    there is a run button, so run the services as below order :
+    
+    ** configserver -> eureka-server -> redis -> accountdb -> cardsdb -> loansdb -> account-MS -> cards-MS -> loans-MS -> gatewayserver **
+
     Account Microservice :: http://172.18.0.11:8072/eazybank/accounts/api/contact-info  [hit again and again, though it is showing 504 from chrome, look at the log, account microservice fallback method is triggered]
     Card Microservice :: using apache benchmark command :: ab -n 10 -c 2 -v 3 http://localhost:8072/eazybank/cards/api/contact-info 
+
+    View container logs using : docker logs -f <container-id>
