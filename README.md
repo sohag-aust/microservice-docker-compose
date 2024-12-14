@@ -49,3 +49,11 @@
     Card Microservice :: using apache benchmark command :: ab -n 10 -c 2 -v 3 http://localhost:8072/eazybank/cards/api/contact-info 
 
     View container logs using : docker logs -f <container-id>
+
+
+# Section :: 11.1 :: Observability using Loki, and Alloy
+
+    Docker Service running sequence
+
+    ** configserver -> eureka-server -> redis -> accountdb -> cardsdb -> loansdb -> account-MS -> cards-MS -> loans-MS -> gatewayserver 
+                        -> minio -> read -> write -> gateway -> backend -> alloy -> grafana
