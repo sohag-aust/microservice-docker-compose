@@ -148,6 +148,20 @@ services:
     networks:
       - eazybank
 
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - eazybank
+
   grafana:
     image: grafana/grafana:11.0.0
     environment:
@@ -268,7 +282,7 @@ services:
       - eazybank
 
   configserver:
-    image: "ashrafulsohag/configserver:s10"
+    image: "ashrafulsohag/configserver:s11_2"
     container_name: configserver-ms
     ports:
       - "8071:8071"
@@ -287,7 +301,7 @@ services:
       - eazybank
 
   eurekaserver:
-    image: "ashrafulsohag/eurekaserver:s10"
+    image: "ashrafulsohag/eurekaserver:s11_2"
     container_name: eurekaserver-ms
     ports:
       - "8070:8070"
@@ -312,7 +326,7 @@ services:
       SPRING_PROFILES_ACTIVE: default
 
   accounts:
-    image: "ashrafulsohag/accounts:s10"
+    image: "ashrafulsohag/accounts:s11_2"
     container_name: accounts-ms
     ports:
       - "8080:8080"
@@ -346,7 +360,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
 
   cards:
-    image: "ashrafulsohag/cards:s10"
+    image: "ashrafulsohag/cards:s11_2"
     container_name: cards-ms
     ports:
       - "9000:9000"
@@ -380,7 +394,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
 
   loans:
-    image: "ashrafulsohag/loans:s10"
+    image: "ashrafulsohag/loans:s11_2"
     container_name: loans-ms
     ports:
       - "8090:8090"
@@ -414,7 +428,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
 
   gatewayserver:
-    image: "ashrafulsohag/gatewayserver:s10"
+    image: "ashrafulsohag/gatewayserver:s11_2"
     container_name: gatewayserver-ms
     ports:
       - "8072:8072"

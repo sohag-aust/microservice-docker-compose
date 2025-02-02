@@ -57,3 +57,45 @@
 
     ** configserver -> eureka-server -> redis -> accountdb -> cardsdb -> loansdb -> account-MS -> cards-MS -> loans-MS -> gatewayserver 
                         -> minio -> read -> write -> gateway -> backend -> alloy -> grafana
+
+
+# Section :: 11.2 :: Observability using Actuator, Micrometer, Prometheus, Grafana
+
+    Docker Service running sequence
+
+    ** 
+        -> configserver -> eureka-server -> redis -> accountdb -> cardsdb -> loansdb -> 
+        -> account-MS -> cards-MS -> loans-MS -> gatewayserver ->
+        -> minio -> read -> write -> gateway -> backend -> alloy -> grafana -> prometheus
+
+    ** After Running all the Docker Containers, if we want to access prometheus, then try
+
+            localhost:9090/targets
+
+        here we will see all the running applications in the prometheus dashboard
+
+        if we want to see CPU_USAGE of the applications, then type : system_cpu_usage in the query section of the dashboard and click execute,
+        we can also see the output as a graph, by clicking graph section
+
+
+    ** Grafana Dashboard For Prometheus Data **
+
+    1. goto grafana dashboard page : https://grafana.com/grafana/dashboards/
+    2. search any of the dashboard in the dashboard search section, ex : JVM micrometer,
+    3. copy the link of the dashboard (https://grafana.com/grafana/dashboards/12271-jvm-micrometer/) 
+    4. goto our grafana application in localhost:3000
+    5. import the link to our grafana application. but before import,
+    6. first we need to signin to grafana by username: admin , and password: admin
+    7. goto dashboard section, 
+    8. click new and select import section and import the link (https://grafana.com/grafana/dashboards/12271-jvm-micrometer/) 
+    9. then load and after that select datasource to prometheus.
+    10. we can add another dashboard like spring boot system monitor (https://grafana.com/grafana/dashboards/11378-justai-system-monitor/) by the same way
+
+    ** Custom Dashboard **
+    we can also set custom dashboard in the grafana dashboard, by clicking the New and New Dashboard section,
+    and then click add section, where we will see visualization and row section
+    the row section is specific to the specific microservice and visualization section is for adding graphs
+
+
+    ** For Setting Alert use the following Site to generate custom webhook url **
+    https://webhook.site/
