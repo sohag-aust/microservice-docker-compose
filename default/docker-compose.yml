@@ -162,6 +162,22 @@ services:
     networks:
       - eazybank
 
+  tempo:
+    image: grafana/tempo:2.6.1
+    container_name: tempo
+    command: -config.file /etc/tempo-config.yml
+    ports:
+      - "3110:3100"
+      - "4318:4318"
+    volumes:
+      - ../observability/tempo/tempo.yml:/etc/tempo-config.yml
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - eazybank
+
   grafana:
     image: grafana/grafana:11.0.0
     environment:
@@ -282,15 +298,15 @@ services:
       - eazybank
 
   configserver:
-    image: "ashrafulsohag/configserver:s11_2"
+    image: "ashrafulsohag/configserver:s11_5"
     container_name: configserver-ms
     ports:
       - "8071:8071"
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8071/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
-      interval: 10s
+      interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 20
       start_period: 60s
 
     deploy:
@@ -300,8 +316,15 @@ services:
     networks:
       - eazybank
 
+    environment:
+#      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-1.27.0.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_SERVICE_NAME: "configserver"
+
   eurekaserver:
-    image: "ashrafulsohag/eurekaserver:s11_2"
+    image: "ashrafulsohag/eurekaserver:s11_3"
     container_name: eurekaserver-ms
     ports:
       - "8070:8070"
@@ -310,9 +333,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8070/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
-      interval: 10s
+      interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 60s
     deploy:
       resources:
@@ -324,9 +347,14 @@ services:
       SPRING_APPLICATION_NAME: eurekaserver
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       SPRING_PROFILES_ACTIVE: default
+      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_SERVICE_NAME: "eurekaserver"
 
   accounts:
-    image: "ashrafulsohag/accounts:s11_2"
+    image: "ashrafulsohag/accounts:s11_3"
     container_name: accounts-ms
     ports:
       - "8080:8080"
@@ -339,9 +367,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8080/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
-      interval: 10s
+      interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 60s
     deploy:
       resources:
@@ -358,9 +386,14 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_SERVICE_NAME: "accounts"
 
   cards:
-    image: "ashrafulsohag/cards:s11_2"
+    image: "ashrafulsohag/cards:s11_3"
     container_name: cards-ms
     ports:
       - "9000:9000"
@@ -373,9 +406,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:9000/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
-      interval: 10s
+      interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 60s
     deploy:
       resources:
@@ -392,9 +425,14 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_SERVICE_NAME: "cards"
 
   loans:
-    image: "ashrafulsohag/loans:s11_2"
+    image: "ashrafulsohag/loans:s11_3"
     container_name: loans-ms
     ports:
       - "8090:8090"
@@ -407,9 +445,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8090/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
-      interval: 10s
+      interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 60s
     deploy:
       resources:
@@ -426,9 +464,14 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_SERVICE_NAME: "loans"
 
   gatewayserver:
-    image: "ashrafulsohag/gatewayserver:s11_2"
+    image: "ashrafulsohag/gatewayserver:s11_3"
     container_name: gatewayserver-ms
     ports:
       - "8072:8072"
@@ -447,9 +490,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8072/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
-      interval: 10s
+      interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
       start_period: 60s
     deploy:
       resources:
@@ -465,6 +508,11 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_DATA_REDIS_TIMEOUT: 5s
+      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_SERVICE_NAME: "gatewayserver"
 
 networks:
   eazybank:

@@ -99,3 +99,13 @@
 
     ** For Setting Alert use the following Site to generate custom webhook url **
     https://webhook.site/
+
+
+# Section :: 11.3 :: Distributed Tracing using OpenTelemetry, Tempo, Grafana
+
+    Docker Service running sequence
+
+    ** 
+        -> configserver -> eureka-server -> redis -> accountdb -> cardsdb -> loansdb -> 
+        -> account-MS -> cards-MS -> loans-MS -> gatewayserver ->
+        -> minio -> read -> write -> gateway -> backend -> alloy -> grafana -> prometheus -> tempo
