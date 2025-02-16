@@ -298,7 +298,7 @@ services:
       - eazybank
 
   configserver:
-    image: "ashrafulsohag/configserver:s11_5"
+    image: "ashrafulsohag/configserver:s11_20"
     container_name: configserver-ms
     ports:
       - "8071:8071"
@@ -313,18 +313,19 @@ services:
       resources:
         limits:
           memory: 700m
+    volumes:
+      - ./otel-agent/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     networks:
       - eazybank
 
     environment:
-#      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-1.27.0.jar"
+      JAVA_TOOL_OPTIONS: "-javaagent:opentelemetry-javaagent.jar"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
-      OTEL_LOGS_EXPORTER: none
       OTEL_SERVICE_NAME: "configserver"
 
   eurekaserver:
-    image: "ashrafulsohag/eurekaserver:s11_3"
+    image: "ashrafulsohag/eurekaserver:s11_20"
     container_name: eurekaserver-ms
     ports:
       - "8070:8070"
@@ -341,20 +342,22 @@ services:
       resources:
         limits:
           memory: 700m
+    volumes:
+      - ./otel-agent/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     networks:
       - eazybank
+
     environment:
       SPRING_APPLICATION_NAME: eurekaserver
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       SPRING_PROFILES_ACTIVE: default
-      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
+      JAVA_TOOL_OPTIONS: "-javaagent:opentelemetry-javaagent.jar"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
-      OTEL_LOGS_EXPORTER: none
       OTEL_SERVICE_NAME: "eurekaserver"
 
   accounts:
-    image: "ashrafulsohag/accounts:s11_3"
+    image: "ashrafulsohag/accounts:s11_20"
     container_name: accounts-ms
     ports:
       - "8080:8080"
@@ -375,6 +378,8 @@ services:
       resources:
         limits:
           memory: 700m
+    volumes:
+      - ./otel-agent/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     networks:
       - eazybank
     environment:
@@ -386,14 +391,13 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
-      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
+      JAVA_TOOL_OPTIONS: "-javaagent:opentelemetry-javaagent.jar"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
-      OTEL_LOGS_EXPORTER: none
       OTEL_SERVICE_NAME: "accounts"
 
   cards:
-    image: "ashrafulsohag/cards:s11_3"
+    image: "ashrafulsohag/cards:s11_20"
     container_name: cards-ms
     ports:
       - "9000:9000"
@@ -414,6 +418,8 @@ services:
       resources:
         limits:
           memory: 700m
+    volumes:
+      - ./otel-agent/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     networks:
       - eazybank
     environment:
@@ -425,14 +431,13 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
-      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
+      JAVA_TOOL_OPTIONS: "-javaagent:opentelemetry-javaagent.jar"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
-      OTEL_LOGS_EXPORTER: none
       OTEL_SERVICE_NAME: "cards"
 
   loans:
-    image: "ashrafulsohag/loans:s11_3"
+    image: "ashrafulsohag/loans:s11_18"
     container_name: loans-ms
     ports:
       - "8090:8090"
@@ -453,6 +458,8 @@ services:
       resources:
         limits:
           memory: 700m
+    volumes:
+      - ./otel-agent/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     networks:
       - eazybank
     environment:
@@ -464,14 +471,13 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
-      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
+      JAVA_TOOL_OPTIONS: "-javaagent:opentelemetry-javaagent.jar"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
-      OTEL_LOGS_EXPORTER: none
       OTEL_SERVICE_NAME: "loans"
 
   gatewayserver:
-    image: "ashrafulsohag/gatewayserver:s11_3"
+    image: "ashrafulsohag/gatewayserver:s11_18"
     container_name: gatewayserver-ms
     ports:
       - "8072:8072"
@@ -490,28 +496,29 @@ services:
         condition: service_healthy
     healthcheck:
       test: "curl --silent --fail --request GET http://localhost:8072/actuator/health/readiness | jq --exit-status '.status == \"UP\"' || exit 1"
-      interval: 30s
-      timeout: 10s
+      interval: 60s
+      timeout: 30s
       retries: 5
       start_period: 60s
     deploy:
       resources:
         limits:
           memory: 700m
+    volumes:
+      - ./otel-agent/opentelemetry-javaagent.jar:/opentelemetry-javaagent.jar
     networks:
       - eazybank
     environment:
       SPRING_APPLICATION_NAME: gatewayserver
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
-      SPRING_DATA_REDIS_CONNECT-TIMEOUT: 10s
+      SPRING_DATA_REDIS_CONNECT-TIMEOUT: 20s
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
-      SPRING_DATA_REDIS_TIMEOUT: 5s
-      JAVA_TOOL_OPTIONS: "-javaagent:/app/libs/opentelemetry-javaagent-2.11.0.jar"
+      SPRING_DATA_REDIS_TIMEOUT: 10s
+      JAVA_TOOL_OPTIONS: "-javaagent:opentelemetry-javaagent.jar"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
-      OTEL_LOGS_EXPORTER: none
       OTEL_SERVICE_NAME: "gatewayserver"
 
 networks:

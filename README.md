@@ -106,6 +106,13 @@
     Docker Service running sequence
 
     ** 
-        -> configserver -> eureka-server -> redis -> accountdb -> cardsdb -> loansdb -> 
+        -> tempo -> configserver -> eureka-server -> redis -> accountdb -> cardsdb -> loansdb -> 
         -> account-MS -> cards-MS -> loans-MS -> gatewayserver ->
-        -> minio -> read -> write -> gateway -> backend -> alloy -> grafana -> prometheus -> tempo
+        -> minio -> read -> write -> gateway -> backend -> alloy -> grafana -> prometheus
+
+
+    => To see the traces in the grafana, we use tempo and opentelemetry
+    1. download otel java agent : 2.12.0 version and put it in the default directory.
+    2. then point this agent to all the microservices, so that this agent can collect traces and post it into tempo
+    3. and from tempo, grafana will view the traces between microservices inside the dashboard
+    4. use docker image tag : s11_20, because previous tags was used for R&D purpose
