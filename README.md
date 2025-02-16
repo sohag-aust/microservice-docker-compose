@@ -116,3 +116,8 @@
     2. then point this agent to all the microservices, so that this agent can collect traces and post it into tempo
     3. and from tempo, grafana will view the traces between microservices inside the dashboard
     4. use docker image tag : s11_20, because previous tags was used for R&D purpose
+
+
+
+    => Run OpenTelemetry Collector locally for other application run locally if required for test
+        docker run --rm -p 4318:4318 -p 4317:4317 otel/opentelemetry-collector-contrib
