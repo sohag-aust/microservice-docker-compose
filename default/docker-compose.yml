@@ -437,7 +437,7 @@ services:
       OTEL_SERVICE_NAME: "cards"
 
   loans:
-    image: "ashrafulsohag/loans:s11_18"
+    image: "ashrafulsohag/loans:s11_20"
     container_name: loans-ms
     ports:
       - "8090:8090"
@@ -477,7 +477,7 @@ services:
       OTEL_SERVICE_NAME: "loans"
 
   gatewayserver:
-    image: "ashrafulsohag/gatewayserver:s11_18"
+    image: "ashrafulsohag/gatewayserver:s11_20"
     container_name: gatewayserver-ms
     ports:
       - "8072:8072"
