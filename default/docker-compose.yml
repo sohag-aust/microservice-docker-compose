@@ -395,6 +395,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
       OTEL_SERVICE_NAME: "accounts"
+      OTEL_PROPAGATORS: tracecontext,baggage
 
   cards:
     image: "ashrafulsohag/cards:s11_20"
@@ -435,6 +436,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
       OTEL_SERVICE_NAME: "cards"
+      OTEL_PROPAGATORS: tracecontext,baggage
 
   loans:
     image: "ashrafulsohag/loans:s11_20"
@@ -475,6 +477,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
       OTEL_SERVICE_NAME: "loans"
+      OTEL_PROPAGATORS: tracecontext,baggage
 
   gatewayserver:
     image: "ashrafulsohag/gatewayserver:s11_20"
@@ -520,6 +523,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
       OTEL_METRICS_EXPORTER: none
       OTEL_SERVICE_NAME: "gatewayserver"
+      OTEL_PROPAGATORS: tracecontext,baggage
 
 networks:
   eazybank:
